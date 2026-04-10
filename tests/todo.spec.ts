@@ -166,15 +166,12 @@ test.describe("Todo Dashboard", () => {
 
   // ─── TC-TODO-07 ──────────────────────────────────────────────────────────
   test("TC-TODO-07: mark an active todo as completed", async ({ page }) => {
-    // "Design the database schema" is active (unchecked)
-    const todoRow = page
-      .locator("main")
-      .getByText("Design the database schema")
-      .locator("..")
-      .locator("..");
+    // Target the row div that contains this text inside the todo list
+    const todoRow = page.locator("main .space-y-2 > div").filter({
+      hasText: "Design the database schema",
+    });
 
-    const checkbox = todoRow.getByRole("button").first();
-    await checkbox.click();
+    await todoRow.getByRole("button").first().click();
 
     // Text span should be struck-through (has line-through class)
     const textEl = page.locator("span").filter({ hasText: "Design the database schema" });
@@ -190,7 +187,7 @@ test.describe("Todo Dashboard", () => {
     await expect(textEl).toHaveClass(/line-through/);
 
     // Click the checkbox to un-complete it
-    const todoRow = page.locator("span").filter({ hasText: "Review project requirements" }).locator(".."); // direct parent = row div
+    const todoRow = page.locator("main .space-y-2 > div").filter({ hasText: "Review project requirements" });
     await todoRow.getByRole("button").first().click();
 
     const spanEl = page.locator("span").filter({ hasText: "Review project requirements" });
@@ -204,9 +201,7 @@ test.describe("Todo Dashboard", () => {
     page,
   }) => {
     // Hover to reveal delete button
-    const writeUnitRow = page
-      .locator("span").filter({ hasText: "Write unit tests" })
-      .locator(".."); // direct parent = row div
+    const writeUnitRow = page.locator("main .space-y-2 > div").filter({ hasText: "Write unit tests" });
     await writeUnitRow.hover();
 
     const deleteBtn = writeUnitRow.getByRole("button").last();
@@ -307,13 +302,14 @@ test.describe("Todo Dashboard", () => {
     // Clear everything: delete all seed todos by completing + clearing
     await page.getByRole("button", { name: /clear completed/i }).click();
 
-    // Complete remaining todos
+    // Complete ALL remaining todos by iterating with stable index
     const rows = page.locator("main .space-y-2 > div");
     const count = await rows.count();
     for (let i = 0; i < count; i++) {
-      const row = rows.nth(0); // always pick first after previous delete
-      await row.getByRole("button").first().click();
+      await rows.nth(i).getByRole("button").first().click();
     }
+    // Now clear those too
+    await page.getByRole("button", { name: /clear completed/i }).click();
 
     // Now switch to Active filter – nothing there
     await page.getByRole("button", { name: /^active$/i }).click();

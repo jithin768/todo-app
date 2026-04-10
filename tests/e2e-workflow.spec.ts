@@ -66,9 +66,7 @@ test.describe("Full E2E Workflow", () => {
     });
 
     // Step 5 – Complete the high priority task
-    const highRow = page
-      .locator("span").filter({ hasText: "E2E: High priority task" })
-      .locator(".."); // direct parent = row div
+    const highRow = page.locator("main .space-y-2 > div").filter({ hasText: "E2E: High priority task" });
     await highRow.getByRole("button").first().click();
     const highSpan = page.locator("span").filter({ hasText: "E2E: High priority task" });
     await expect(highSpan).toHaveClass(/line-through/);
@@ -115,7 +113,7 @@ test.describe("Full E2E Workflow", () => {
       "E2E: Medium priority task",
       "E2E: Low priority task",
     ]) {
-      const row = page.locator("span").filter({ hasText: text }).locator(".."); // direct parent = row div
+      const row = page.locator("main .space-y-2 > div").filter({ hasText: text }); // direct parent = row div
       await row.hover();
       await row.getByRole("button").last().click();
       await expect(page.locator("span").filter({ hasText: text })).not.toBeVisible();
